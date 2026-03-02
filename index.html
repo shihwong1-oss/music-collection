@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>唱片管理库</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 导航栏 -->
+        <nav class="nav-bar">
+            <div class="nav-content">
+                <h1 class="nav-title" id="nav-title">WM</h1>
+                <div class="nav-actions">
+                    <button id="add-btn" class="nav-btn primary" title="添加">
+                        <span class="icon">➕</span>
+                    </button>
+                </div>
+            </div>
+            <div id="nav-scan-panel" class="nav-scan-panel hidden">
+                <div class="nav-scan-view">
+                    <video id="nav-qr-video" playsinline muted></video>
+                    <canvas id="nav-qr-canvas"></canvas>
+                </div>
+                <div class="nav-scan-actions">
+                    <label class="btn">
+                        选择图片
+                        <input id="nav-qr-file" type="file" accept="image/*" class="hidden">
+                    </label>
+                </div>
+                <div id="nav-scan-error" class="scan-result hidden"></div>
+            </div>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 列表视图 -->
+            <div id="list-view" class="view active">
+                <!-- 工具栏：分类/细分 + 更多 -->
+                <div class="toolbar">
+                    <button class="filter-btn" id="btn-filter-category">分类</button>
+                    <div class="filter-dropdown" id="menu-filter-category"></div>
+                    <button class="filter-btn" id="btn-filter-subcategory">细分</button>
+                    <div class="filter-dropdown" id="menu-filter-subcategory"></div>
+                    <button class="filter-btn" id="btn-filter-more">更多</button>
+                    <div class="filter-dropdown" id="menu-filter-more"></div>
+                    <button id="btn-filter-reset" class="filter-btn hidden" title="重置筛选">重置</button>
+                    <div class="toolbar-spacer"></div>
+                    <button id="search-toggle-btn" class="filter-btn" title="搜索">🔍 搜索</button>
+                    <!-- 覆盖式搜索框（出现时覆盖筛选项） -->
+                    <div id="search-bar" class="search-bar hidden">
+                        <input type="text" id="search-input" class="search-input" placeholder="搜索唱片、歌手、分类...">
+                        <button id="search-close-btn" class="search-close">✕</button>
+                    </div>
+                    <!-- 二级下拉挂载点（不直接显示按钮） -->
+                    <div class="filter-dropdown" id="menu-filter-date"></div>
+                    <div class="filter-dropdown" id="menu-filter-format"></div>
+                    <div class="filter-dropdown" id="menu-filter-rating"></div>
+                    <div class="filter-dropdown" id="menu-filter-channel"></div>
+                </div>
+
+                <!-- 统计信息 -->
+                
+
+                <!-- 唱片列表 -->
+                <div id="records-container" class="records-container">
+                    <div class="empty-state">
+                        <div class="empty-icon">🎵</div>
+                        <p>还没有唱片，点击下方按钮快速添加</p>
+                    </div>
+                </div>
+
+                <!-- 批量操作栏 -->
+                <div id="batch-actions" class="batch-actions hidden">
+                    <button id="batch-delete-btn" class="btn danger">删除</button>
+                    <button id="batch-category-btn" class="btn">分类</button>
+                    <button id="batch-cancel-btn" class="btn gray">取消</button>
+                </div>
+            </div>
+
+            <!-- 详情视图 -->
+            <div id="detail-view" class="view">
+                <div class="detail-header">
+                    <button id="detail-back-btn" class="back-btn">← 返回</button>
+                    <div class="detail-actions">
+                        <button id="detail-edit-btn" class="btn primary">编辑</button>
+                        <button id="detail-delete-btn" class="btn danger">删除</button>
+                    </div>
+                </div>
+                <div id="detail-content" class="detail-content"></div>
+            </div>
+
+            
+
+            <!-- 编辑/添加表单视图 -->
+            <div id="form-view" class="view">
+                <div class="form-header">
+                    <button id="form-back-btn" class="back-btn">← 返回</button>
+                    <h2 id="form-title">添加唱片</h2>
+                </div>
+                <form id="record-form" class="record-form">
+                    <!-- 添加方式选择 -->
+                    <div class="add-method-tabs">
+                        <button type="button" class="tab-btn active" data-method="manual">手动添加</button>
+                        <button type="button" class="tab-btn" data-method="json">导入JSON</button>
+                    </div>
+
+                    <!-- 手动添加表单 -->
+                    <div id="manual-method" class="form-method active">
+                        <div class="form-group">
+                            <label for="record-cover">唱片封面</label>
+                            <div class="cover-upload">
+                                <div id="cover-preview" class="cover-preview">
+                                    <img src="assets/placeholder-vinyl.svg" alt="placeholder">
+                                </div>
+                                <input type="file" id="record-cover" accept="image/*">
+                                <p class="form-hint">点击上传或从摄像头拍摄</p>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="record-name">唱片名称 <span class="required">*</span></label>
+                            <input type="text" id="record-name" name="name" required placeholder="如：Thriller">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="record-intro">介绍</label>
+                            <textarea id="record-intro" name="intro" placeholder="唱片的描述、背景信息等"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>歌手/艺术家 <span class="required">*</span></label>
+                            <div class="artist-input-group">
+                                <select id="record-artist" name="artist" required>
+                                    <option value="">选择或输入歌手</option>
+                                </select>
+                                <button type="button" id="add-artist-btn" class="btn small">+</button>
+                            </div>
+                            <input type="text" id="artist-new-input" class="hidden" placeholder="输入新歌手名称">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="record-release-date">发行时间</label>
+                                <input type="date" id="record-release-date" name="releaseDate">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="record-label">唱片公司</label>
+                                <div class="label-input-group">
+                                    <select id="record-label" name="label">
+                                        <option value="">选择或输入唱片公司</option>
+                                    </select>
+                                    <button type="button" id="edit-label-btn" class="btn small gray" title="编辑唱片公司">✎</button>
+                                    <button type="button" id="delete-label-btn" class="btn small danger" title="删除唱片公司">×</button>
+                                    <button type="button" id="add-label-btn" class="btn small" title="添加新唱片公司">+</button>
+                                </div>
+                                <input type="text" id="label-new-input" class="hidden" placeholder="输入新唱片公司">
+                                <input type="text" id="label-edit-input" class="hidden" placeholder="修改唱片公司名称">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="record-edition">发行版本</label>
+                                <select id="record-edition" name="edition">
+                                    <option value="">选择版本</option>
+                                    <option value="first">首版</option>
+                                    <option value="reprint">再版</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="record-region">发行地区</label>
+                                <select id="record-region" name="region">
+                                    <option value="">选择地区</option>
+                                    <option value="us">美版</option>
+                                    <option value="eu">欧版</option>
+                                    <option value="jp">日版</option>
+                                    <option value="hk">港版</option>
+                                    <option value="tw">台版</option>
+                                    <option value="cn">国版</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>大分类</label>
+                                <div class="category-group">
+                                    <select id="record-main-category" name="mainCategory">
+                                        <option value="">选择分类</option>
+                                    </select>
+                                    <button type="button" id="edit-main-category-btn" class="btn small gray" title="编辑分类">✎</button>
+                                    <button type="button" id="delete-main-category-btn" class="btn small danger" title="删除分类">×</button>
+                                    <button type="button" id="add-main-category-btn" class="btn small" title="添加新分类">+</button>
+                                </div>
+                                <input type="text" id="main-category-new-input" class="hidden" placeholder="输入新大分类">
+                                <input type="text" id="main-category-edit-input" class="hidden" placeholder="修改大分类名称">
+                            </div>
+
+                            <div class="form-group">
+                                <label>细分分类</label>
+                                <div class="category-group">
+                                    <select id="record-sub-category" name="subCategory">
+                                        <option value="">选择细分</option>
+                                    </select>
+                                    <button type="button" id="edit-sub-category-btn" class="btn small gray" title="编辑细分">✎</button>
+                                    <button type="button" id="delete-sub-category-btn" class="btn small danger" title="删除细分">×</button>
+                                    <button type="button" id="add-sub-category-btn" class="btn small" title="添加新细分">+</button>
+                                </div>
+                                <input type="text" id="sub-category-new-input" class="hidden" placeholder="输入新细分分类">
+                                <input type="text" id="sub-category-edit-input" class="hidden" placeholder="修改细分分类名称">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="record-format">格式</label>
+                                <select id="record-format" name="format">
+                                    <option value="">选择格式</option>
+                                    <option value="vinyl">黑胶</option>
+                                    <option value="cd">光盘</option>
+                                    <option value="cassette">磁带</option>
+                                    <option value="digital">数字</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="record-rating">评分 (0-10)</label>
+                                <div class="rating-selector">
+                                    <input type="range" id="record-rating" name="rating" min="0" max="10" value="0">
+                                    <span id="rating-display">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>购买信息</label>
+                            <div class="purchase-group">
+                                <select id="record-purchase-channel" name="purchaseChannel">
+                                    <option value="">选择或输入购买渠道</option>
+                                </select>
+                                <button type="button" id="edit-channel-btn" class="btn small gray" title="编辑渠道">✎</button>
+                                <button type="button" id="delete-channel-btn" class="btn small danger" title="删除渠道">×</button>
+                                <button type="button" id="add-channel-btn" class="btn small" title="添加新渠道">+</button>
+                            </div>
+                            <input type="text" id="channel-new-input" class="hidden" placeholder="输入新渠道">
+                            <input type="text" id="channel-edit-input" class="hidden" placeholder="修改渠道名称">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="record-price">购买价格（人民币）</label>
+                                <input type="number" id="record-price" name="price" placeholder="￥" step="0.01" min="0" inputmode="decimal">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="record-condition">新旧状态</label>
+                                <select id="record-condition" name="condition">
+                                    <option value="">选择状态</option>
+                                    <option value="new">全新</option>
+                                    <option value="used">二手</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="record-tracks">曲目列表（每行一首）</label>
+                            <textarea id="record-tracks" name="tracks" placeholder="如：&#10;1. Billie Jean&#10;2. Beat It&#10;3. Thriller"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="record-notes">备注</label>
+                            <textarea id="record-notes" name="notes" placeholder="个人评价、收藏信息等"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- JSON导入方法 -->
+                    <div id="json-method" class="form-method">
+                        <div class="json-import">
+                            <div class="json-template-info">
+                                <p>📋 使用 JSON 格式快速导入唱片信息</p>
+                                <button type="button" id="download-template-btn" class="btn secondary">⬇️ 下载JSON模板</button>
+                            </div>
+                            
+                            <div class="upload-area">
+                                <input type="file" id="json-file" accept=".json,application/json" class="hidden">
+                                <div id="json-placeholder" class="upload-placeholder">
+                                    <div class="upload-icon">📄</div>
+                                    <p>点击或拖动 JSON 文件到这里</p>
+                                    <p class="upload-hint">支持 .json 格式</p>
+                                </div>
+                                <div id="json-result" class="json-result hidden"></div>
+                            </div>
+                            <button type="button" id="import-json-btn" class="btn primary" disabled>导入唱片</button>
+                        </div>
+                    </div>
+
+                    <!-- 提交按钮 -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn primary full-width">保存唱片</button>
+                        <button type="button" id="form-cancel-btn" class="btn gray full-width">取消</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+        <!-- 悬浮扫码按钮 -->
+        <button id="fab-scan-btn" class="fab">📷</button>
+
+        <!-- 底部操作栏 -->
+        <footer class="footer hidden">
+            <button id="nav-list-btn" class="footer-btn active" data-view="list-view" title="列表">
+                <span class="icon">📋</span>
+                <span class="label">唱片</span>
+            </button>
+        </footer>
+    </div>
+
+    <!-- 模态框 -->
+    <div id="modal-overlay" class="modal-overlay hidden"></div>
+    <div id="confirmation-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="confirmation-title">确认删除</h3>
+            <p id="confirmation-message"></p>
+            <div class="modal-actions">
+                <button id="confirm-btn" class="btn danger">确认</button>
+                <button id="cancel-modal-btn" class="btn gray">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分类弹窗 -->
+    <div id="category-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>选择分类</h3>
+            <div id="category-options" class="category-options"></div>
+            <div class="modal-actions">
+                <button id="category-confirm-btn" class="btn primary">确认</button>
+                <button id="category-cancel-btn" class="btn gray">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 排序弹窗 -->
+    <div id="sort-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>排序方式</h3>
+            <div class="sort-options">
+                <label><input type="radio" name="sort" value="date-desc"> 最新添加</label>
+                <label><input type="radio" name="sort" value="date-asc"> 最早添加</label>
+                <label><input type="radio" name="sort" value="name-asc"> 名称 (A-Z)</label>
+                <label><input type="radio" name="sort" value="artist-asc"> 歌手 (A-Z)</label>
+                <label><input type="radio" name="sort" value="rating-desc"> 评分最高</label>
+            </div>
+            <div class="modal-actions">
+                <button id="sort-confirm-btn" class="btn primary">应用</button>
+                <button id="sort-cancel-btn" class="btn gray">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 筛选：分类 -->
+    <div id="filter-category-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>按分类筛选</h3>
+            <div class="form-group">
+                <label>大分类</label>
+                <select id="filter-main-category-select">
+                    <option value="">全部分类</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>细分分类</label>
+                <select id="filter-sub-category-select">
+                    <option value="">全部细分</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button id="filter-category-apply-btn" class="btn primary">应用</button>
+                <button id="filter-category-clear-btn" class="btn secondary">清除</button>
+                <button id="filter-category-cancel-btn" class="btn gray">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 筛选：时间 -->
+    <div id="filter-date-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>按发行时间筛选</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>起始日期</label>
+                    <input type="date" id="filter-date-from">
+                </div>
+                <div class="form-group">
+                    <label>结束日期</label>
+                    <input type="date" id="filter-date-to">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="filter-date-apply-btn" class="btn primary">应用</button>
+                <button id="filter-date-clear-btn" class="btn secondary">清除</button>
+                <button id="filter-date-cancel-btn" class="btn gray">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 筛选：格式 -->
+    <div id="filter-format-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>按格式筛选</h3>
+            <div class="sort-options">
+                <label><input type="radio" name="filter-format" value=""> 全部</label>
+                <label><input type="radio" name="filter-format" value="vinyl"> 黑胶</label>
+                <label><input type="radio" name="filter-format" value="cd"> 光盘</label>
+                <label><input type="radio" name="filter-format" value="cassette"> 磁带</label>
+                <label><input type="radio" name="filter-format" value="digital"> 数字</label>
+            </div>
+            <div class="modal-actions">
+                <button id="filter-format-apply-btn" class="btn primary">应用</button>
+                <button id="filter-format-clear-btn" class="btn secondary">清除</button>
+                <button id="filter-format-cancel-btn" class="btn gray">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 筛选：评分 -->
+    <div id="filter-rating-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>按最低评分筛选</h3>
+            <div class="form-group">
+                <div class="rating-selector">
+                    <input type="range" id="filter-rating-min" min="0" max="10" value="0">
+                    <span id="filter-rating-display">0</span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="filter-rating-apply-btn" class="btn primary">应用</button>
+                <button id="filter-rating-clear-btn" class="btn secondary">清除</button>
+                <button id="filter-rating-cancel-btn" class="btn gray">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 筛选：购买渠道 -->
+    <div id="filter-channel-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>按购买渠道筛选</h3>
+            <div class="form-group">
+                <select id="filter-channel-select">
+                    <option value="">全部渠道</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button id="filter-channel-apply-btn" class="btn primary">应用</button>
+                <button id="filter-channel-clear-btn" class="btn secondary">清除</button>
+                <button id="filter-channel-cancel-btn" class="btn gray">取消</button>
+            </div>
+        </div>
+    </div>
+
+    
+
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

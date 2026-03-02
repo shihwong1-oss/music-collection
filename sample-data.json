@@ -1,0 +1,80 @@
+{
+  "sampleRecords": [
+    {
+      "id": "1",
+      "name": "Thriller",
+      "artist": "Michael Jackson",
+      "releaseDate": "1982-11-30",
+      "category": "流行",
+      "rating": 10,
+      "format": "cd",
+      "purchaseChannel": "Amazon",
+      "tracks": "1. Billie Jean\n2. Beat It\n3. Thriller\n4. Human Nature\n5. The Girl Is Mine\n6. Wanna Be Startin' Somethin'\n7. Lady in My Life\n8. The Woman in My Life\n9. P.Y.T. (Pretty Young Thing)\n10. The Walk",
+      "notes": "迈克尔·杰克逊的里程碑专辑，全球销量最高的专辑之一。\n音乐影响：这是一张经典的流行音乐佳作。",
+      "cover": "",
+      "createdAt": "2026-02-25T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "name": "Hotel California",
+      "artist": "Eagles",
+      "releaseDate": "1976-12-08",
+      "category": "摇滚",
+      "rating": 9,
+      "format": "vinyl",
+      "purchaseChannel": "本地唱片行",
+      "tracks": "1. New Kid in Town\n2. Hotel California\n3. Life in the Fast Lane\n4. Wasted Time\n5. Wasted Time (Reprise)\n6. Victim of Love\n7. Pretty Maids All in a Row\n8. Try and Love Again\n9. The Last Resort",
+      "notes": "老鹰乐队（Eagles）的第四张录音室专辑。\n《Hotel California》是乐队最著名的单曲。",
+      "cover": "",
+      "createdAt": "2026-02-24T14:30:00Z"
+    },
+    {
+      "id": "3",
+      "name": "A Kind of Blue",
+      "artist": "Miles Davis",
+      "releaseDate": "1959-03-02",
+      "category": "爵士",
+      "rating": 10,
+      "format": "vinyl",
+      "purchaseChannel": "拍卖会",
+      "tracks": "1. So What\n2. Freddie Freeloader\n3. Blue in Green\n4. All Blues\n5. Flamenco Sketches",
+      "notes": "爵士音乐的经典之作。迈尔斯·戴维斯(Miles Davis)的代表作。\n全球销量超过500万张。",
+      "cover": "",
+      "createdAt": "2026-02-23T09:15:00Z"
+    },
+    {
+      "id": "4",
+      "name": "OK Computer",
+      "artist": "Radiohead",
+      "releaseDate": "1997-06-16",
+      "category": "摇滚",
+      "rating": 9,
+      "format": "cd",
+      "purchaseChannel": "HMV",
+      "tracks": "1. Airbag\n2. Paranoid Android\n3. Subterranean Homesick Alien\n4. Exit Music (For a Film)\n5. Let Down\n6. Karma Police\n7. Fitter Happier\n8. Climbing Up the Walls\n9. No Surprises\n10. Lucky\n11. The Tourist",
+      "notes": "Radiohead的第三张专辑，被评为90年代最伟大的摇滚专辑。",
+      "cover": "",
+      "createdAt": "2026-02-22T16:45:00Z"
+    },
+    {
+      "id": "5",
+      "name": "Purple",
+      "artist": "Prince",
+      "releaseDate": "1994-10-13",
+      "category": "流行",
+      "rating": 8,
+      "format": "cd",
+      "purchaseChannel": "Best Buy",
+      "tracks": "1. Eye Know\n2. Pussy Control\n3. Endorphins\n4. Purple Medley\n5. My Name Is Prince\n6. Emancipation",
+      "notes": "Prince的经典之作，展现了多种音乐风格的融合。",
+      "cover": "",
+      "createdAt": "2026-02-21T11:20:00Z"
+    }
+  ],
+  "customCategories": [
+    "最爱",
+    "待听",
+    "在听"
+  ],
+  "instructions": "如何导入示例数据到你的唱片库:\n\n1. 打开浏览器开发者工具 (F12)\n2. 进入 Console 标签\n3. 复制以下代码并粘贴到控制台:\n\n```javascript\nconst sampleData = {...此JSON数据...};\nlocalStorage.setItem('musicRecords', JSON.stringify(sampleData.sampleRecords));\nlocalStorage.setItem('musicCategories', JSON.stringify(sampleData.customCategories));\nalert('导入成功！请刷新页面');\nlocation.reload();\n```\n\n4. 刷新页面即可看到示例数据"
+}

@@ -1,0 +1,100 @@
+{
+  "records": [
+    {
+      "name": "Thriller",
+      "artist": "Michael Jackson",
+      "releaseDate": "1982-11-30",
+      "category": "流行",
+      "rating": 10,
+      "format": "cd",
+      "purchaseChannel": "Amazon",
+      "tracks": "1. Billie Jean\n2. Beat It\n3. Thriller\n4. Human Nature\n5. The Girl Is Mine",
+      "notes": "迈克尔·杰克逊的里程碑专辑，全球销量超4000万张。经典的80年代弹跳舞曲。",
+      "cover": ""
+    },
+    {
+      "name": "Dark Side of the Moon",
+      "artist": "Pink Floyd",
+      "releaseDate": "1973-03-01",
+      "category": "摇滚",
+      "rating": 10,
+      "format": "vinyl",
+      "purchaseChannel": "本地唱片行",
+      "tracks": "1. Speak to Me\n2. Breathe\n3. On the Run\n4. Time\n5. The Great Gig in the Sky\n6. Money\n7. Us and Them\n8. Any Colour You Like\n9. Brain Damage\n10. Eclipse",
+      "notes": "Pink Floyd的代表作，概念专辑的杰作。获得格莱美奖。",
+      "cover": ""
+    },
+    {
+      "name": "Kind of Blue",
+      "artist": "Miles Davis",
+      "releaseDate": "1959-03-02",
+      "category": "爵士",
+      "rating": 10,
+      "format": "vinyl",
+      "purchaseChannel": "eBay拍卖",
+      "tracks": "1. So What\n2. Freddie Freeloader\n3. Blue in Green\n4. All Blues\n5. Flamenco Sketches",
+      "notes": "爵士乐的奠基之作。迈尔斯·戴维斯最著名的专辑，全球销量超500万张。",
+      "cover": ""
+    },
+    {
+      "name": "Rumours",
+      "artist": "Fleetwood Mac",
+      "releaseDate": "1977-02-04",
+      "category": "流行摇滚",
+      "rating": 9,
+      "format": "cd",
+      "purchaseChannel": "Spotify",
+      "tracks": "1. Second Hand News\n2. Dreams\n3. Don't Stop\n4. Go Your Own Way\n5. Songbird\n6. The Chain\n7. You Make Loving Fun\n8. Gold Dust Woman",
+      "notes": "1977年最畅销的专辑。包含多首经典歌曲，展现了乐队的音乐成熟度。",
+      "cover": ""
+    },
+    {
+      "name": "Abbey Road",
+      "artist": "The Beatles",
+      "releaseDate": "1969-09-26",
+      "category": "摇滚",
+      "rating": 10,
+      "format": "vinyl",
+      "purchaseChannel": "唱片店",
+      "tracks": "1. Come Together\n2. Something\n3. Maxwell's Silver Hammer\n4. Oh! Darling\n5. Octopus's Garden\n6. I Want You (She's So Heavy)\n7. Here Comes the Sun\n8. Because\n9. You Never Give Me Your Money\n10. Sun King",
+      "notes": "甲壳虫乐队最后一张录音室专辑。包含多首经典歌曲和创新的录音技术。",
+      "cover": ""
+    },
+    {
+      "name": "Nevermind",
+      "artist": "Nirvana",
+      "releaseDate": "1991-09-24",
+      "category": "摇滚",
+      "rating": 9,
+      "format": "cd",
+      "purchaseChannel": "Best Buy",
+      "tracks": "1. Smells Like Teen Spirit\n2. Come as You Are\n3. Breed\n4. Negative Creep\n5. On a Plain\n6. Something in the Way",
+      "notes": "Smells Like Teen Spirit'让Nirvana成为国际级乐队。标志性的90年代摇滚专辑。",
+      "cover": ""
+    },
+    {
+      "name": "Blonde",
+      "artist": "Frank Ocean",
+      "releaseDate": "2016-08-20",
+      "category": "说唱/R&B",
+      "rating": 9,
+      "format": "digital",
+      "purchaseChannel": "Apple Music",
+      "tracks": "1. Nikes\n2. Ivy\n3. Pink + White\n4. Nikes (Reprise)\n5. Nights\n6. Ivy (Piano)\n7. Be Yourself\n8. Wither",
+      "notes": "Frank Ocean的突破性专辑。概念专辑，探索爱、失去和自我认知的主题。",
+      "cover": ""
+    },
+    {
+      "name": "In the Aeroplane Over the Sea",
+      "artist": "Neutral Milk Hotel",
+      "releaseDate": "1998-02-10",
+      "category": "独立摇滚",
+      "rating": 9,
+      "format": "cd",
+      "purchaseChannel": "Discogs",
+      "tracks": "1. Holland, 1945\n2. In the Aeroplane Over the Sea\n3. King of Carrot Flowers, Pt. One\n4. Dani California\n5. Knock Yourself Up",
+      "notes": "独立摇滚的代表作。即兴、混乱却充满感染力的素养创作。",
+      "cover": ""
+    }
+  ]
+}
