@@ -841,18 +841,63 @@ function showView(viewName) {
 }
 
 function startNavScanner() {
+    if (!window.jsQR) {
+        const err = document.getElementById('nav-scan-error');
+        if (err) { 
+            err.textContent = '扫码组件未加载，请检查网络连接或刷新页面'; 
+            err.classList.remove('hidden'); 
+        }
+        return;
+    }
+    
     const video = document.getElementById('nav-qr-video');
     if (!video) return;
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false }).then(stream => {
-        navVideoStream = stream;
-        video.srcObject = stream;
-        video.play();
-        navScannerActive = true;
-        navScanLoop();
-    }).catch(() => {
-        const err = document.getElementById('nav-scan-error');
-        if (err) { err.textContent = '无法启动摄像头'; err.classList.remove('hidden'); }
-    });
+    
+    // 尝试优先后置摄像头，如果失败则尝试默认摄像头
+    const startCamera = (constraints) => {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            const err = document.getElementById('nav-scan-error');
+            if (err) { 
+                err.textContent = '浏览器不支持或未在HTTPS环境下运行'; 
+                err.classList.remove('hidden'); 
+            }
+            return;
+        }
+
+        navigator.mediaDevices.getUserMedia(constraints).then(stream => {
+            navVideoStream = stream;
+            video.srcObject = stream;
+            // 必须调用 play() 才能在某些移动浏览器上显示
+            video.play().catch(e => console.error('Video play error:', e));
+            navScannerActive = true;
+            navScanLoop();
+            
+            // 清除之前的错误
+            const err = document.getElementById('nav-scan-error');
+            if (err) err.classList.add('hidden');
+        }).catch((e) => {
+            console.error('Camera error:', e);
+            // 如果是后置摄像头失败，尝试不指定 facingMode
+            if (constraints.video && constraints.video.facingMode === 'environment') {
+                startCamera({ video: true, audio: false });
+            } else {
+                const err = document.getElementById('nav-scan-error');
+                let msg = '无法启动摄像头';
+                if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+                    msg = '请允许访问摄像头权限';
+                } else if (e.name === 'NotFoundError' || e.name === 'DevicesNotFoundError') {
+                    msg = '未检测到摄像头设备';
+                } else if (e.name === 'NotReadableError' || e.name === 'TrackStartError') {
+                    msg = '摄像头被占用或无法访问';
+                } else if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                    msg = '扫码需要 HTTPS 环境';
+                }
+                if (err) { err.textContent = msg; err.classList.remove('hidden'); }
+            }
+        });
+    };
+
+    startCamera({ video: { facingMode: 'environment' }, audio: false });
 }
 
 function stopNavScanner() {
@@ -1043,7 +1088,7 @@ function renderRecordsList(records) {
             <div class="record-cover">
                 ${record.cover ? `<img src="${record.cover}" alt="${record.name}">` : '<img src="assets/placeholder-vinyl.svg" alt="placeholder">'}
             </div>
-            <div class="record-info">
+            <div class="record-info" style="${record.themeColor ? `background: ${record.themeColor}; color: ${textColorFor(record.themeColor)};` : ''}">
                 <div class="record-name">${escapeHtml(record.name)}</div>
                 <div class="record-artist">${escapeHtml(record.artist)}</div>
                 <div class="record-meta">
@@ -1132,33 +1177,31 @@ function showRecordDetail(recordId) {
             <div class="detail-section-title">基本信息</div>
             <div class="detail-item">
                 <span class="detail-item-label">分类</span>
-                <span class="detail-item-value">${(record.mainCategory ? mainCategoryLabels[record.mainCategory] : record.category) || '-'}</span>
+                <span class="detail-item-value">${record.mainCategory ? mainCategoryLabels[record.mainCategory] : (record.category || '')}</span>
             </div>
-            ${record.subCategory ? `
             <div class="detail-item">
                 <span class="detail-item-label">细分</span>
-                <span class="detail-item-value">${record.subCategory}</span>
+                <span class="detail-item-value">${record.subCategory || ''}</span>
             </div>
-            ` : ''}
             <div class="detail-item">
                 <span class="detail-item-label">发行时间</span>
-                <span class="detail-item-value">${formatDateShort(record.releaseDate) || '-'}</span>
+                <span class="detail-item-value">${record.releaseDate ? formatDateShort(record.releaseDate) : ''}</span>
             </div>
             <div class="detail-item">
                 <span class="detail-item-label">唱片公司</span>
-                <span class="detail-item-value">${record.label || '-'}</span>
+                <span class="detail-item-value">${record.label || ''}</span>
             </div>
             <div class="detail-item">
                 <span class="detail-item-label">格式</span>
-                <span class="detail-item-value">${formatFormat(record.format) || '-'}</span>
+                <span class="detail-item-value">${record.format ? formatFormat(record.format) : ''}</span>
             </div>
             <div class="detail-item">
                 <span class="detail-item-label">评分</span>
-                <span class="detail-item-value">${record.rating ? `⭐ ${record.rating}/10` : '-'}</span>
+                <span class="detail-item-value">${record.rating ? `⭐ ${record.rating}/10` : ''}</span>
             </div>
             <div class="detail-item">
                 <span class="detail-item-label">成色</span>
-                <span class="detail-item-value">${record.condition === 'new' ? '全新' : (record.condition === 'used' ? '二手' : '-')}</span>
+                <span class="detail-item-value">${record.condition === 'new' ? '全新' : (record.condition === 'used' ? '二手' : '')}</span>
             </div>
         </div>
 
@@ -1166,31 +1209,27 @@ function showRecordDetail(recordId) {
             <div class="detail-section-title">购买信息</div>
             <div class="detail-item">
                 <span class="detail-item-label">购买渠道</span>
-                <span class="detail-item-value">${escapeHtml(record.purchaseChannel || '-')}</span>
+                <span class="detail-item-value">${escapeHtml(record.purchaseChannel || '')}</span>
             </div>
             <div class="detail-item">
                 <span class="detail-item-label">价格</span>
-                <span class="detail-item-value">${record.price ? '￥'+record.price : '-'}</span>
+                <span class="detail-item-value">${record.price ? '￥'+record.price : ''}</span>
             </div>
         </div>
 
-        ${tracks.length > 0 ? `
-            <div class="detail-section">
-                <div class="detail-section-title">曲目列表 (${tracks.length})</div>
-                <div class="detail-tracks">
-                    ${tracks.map((track, idx) => `<div class="detail-track">${idx + 1}. ${escapeHtml(track)}</div>`).join('')}
-                </div>
+        <div class="detail-section">
+            <div class="detail-section-title">曲目列表</div>
+            <div class="detail-tracks">
+                ${tracks.map((track, idx) => `<div class="detail-track">${idx + 1}. ${escapeHtml(track)}</div>`).join('')}
             </div>
-        ` : ''}
+        </div>
 
-        ${record.notes ? `
-            <div class="detail-section">
-                <div class="detail-section-title">备注</div>
-                <p style="padding: 12px; background: var(--bg-light); border-radius: 6px; font-size: 14px; white-space: pre-wrap;">
-                    ${escapeHtml(record.notes)}
-                </p>
-            </div>
-        ` : ''}
+        <div class="detail-section">
+            <div class="detail-section-title">备注</div>
+            <p style="padding: 12px; background: var(--bg-light); border-radius: 6px; font-size: 14px; white-space: pre-wrap;">
+                ${escapeHtml(record.notes || '')}
+            </p>
+        </div>
 
         <div class="detail-section">
             <div style="font-size: 12px; color: var(--text-secondary);">
@@ -1658,7 +1697,46 @@ function showForm() {
     document.querySelectorAll('.form-method').forEach(m => m.classList.remove('active'));
     document.querySelector('.add-method-tabs .tab-btn[data-method="manual"]').classList.add('active');
     document.getElementById('manual-method').classList.add('active');
-    
+    const picker = document.getElementById('record-theme-color-picker');
+    const input = document.getElementById('record-theme-color');
+    const chip = document.getElementById('record-theme-chip');
+    const pop = document.getElementById('record-theme-popover');
+    const hue = document.getElementById('record-theme-hue');
+    const light = document.getElementById('record-theme-light');
+    if (picker && input) {
+        const defaultColor = '#6366f1';
+        picker.value = defaultColor;
+        input.value = '';
+        if (chip) chip.style.background = defaultColor;
+        picker.oninput = () => { input.value = picker.value; if (chip) chip.style.background = picker.value; const hsl = hexToHsl(picker.value); if (hsl) { if (hue) hue.value = Math.round(hsl.h); if (light) light.value = Math.round(hsl.l); if (light) light.style.setProperty('--hue', hue.value); const pv = document.getElementById('record-theme-preview'); if (pv) pv.style.background = picker.value; } };
+        input.onchange = () => {
+            const v = input.value.trim();
+            if (/^#([0-9a-fA-F]{6})$/.test(v)) { picker.value = v; if (chip) chip.style.background = v; const hsl = hexToHsl(v); if (hsl) { if (hue) hue.value = Math.round(hsl.h); if (light) light.value = Math.round(hsl.l); if (light) light.style.setProperty('--hue', hue.value); const pv = document.getElementById('record-theme-preview'); if (pv) pv.style.background = v; } }
+        };
+        if (chip) chip.onclick = () => { if (pop) pop.classList.toggle('hidden'); };
+        if (pop) {
+            document.addEventListener('click', (e) => {
+                if (!pop.classList.contains('hidden')) {
+                    if (!pop.contains(e.target) && e.target !== chip) pop.classList.add('hidden');
+                }
+            });
+        }
+        if (hue && light) {
+            const updateFromHsl = () => {
+                const c = hslToHex(parseInt(hue.value, 10), 70, parseInt(light.value, 10));
+                input.value = c;
+                picker.value = c;
+                if (chip) chip.style.background = c;
+                if (light) light.style.setProperty('--hue', hue.value);
+                const pv = document.getElementById('record-theme-preview');
+                if (pv) pv.style.background = c;
+            };
+            hue.oninput = updateFromHsl;
+            light.oninput = updateFromHsl;
+        }
+        const pv = document.getElementById('record-theme-preview');
+        if (pv) pv.style.background = defaultColor;
+    }
     showView('form-view');
 }
 
@@ -1712,6 +1790,30 @@ function showFormForEdit(recordId) {
     
     if (record.cover) {
         document.getElementById('cover-preview').innerHTML = `<img src="${record.cover}" alt="${record.name}">`;
+    }
+    if (document.getElementById('record-theme-color')) {
+        document.getElementById('record-theme-color').value = record.themeColor || '';
+    }
+    if (document.getElementById('record-theme-color-picker')) {
+        document.getElementById('record-theme-color-picker').value = record.themeColor || '#6366f1';
+    }
+    if (document.getElementById('record-theme-chip')) {
+        document.getElementById('record-theme-chip').style.background = record.themeColor || '#6366f1';
+    }
+    if (document.getElementById('record-theme-popover')) {
+        document.getElementById('record-theme-popover').classList.add('hidden');
+    }
+    const hue = document.getElementById('record-theme-hue');
+    const light = document.getElementById('record-theme-light');
+    const pv = document.getElementById('record-theme-preview');
+    if (pv) pv.style.background = record.themeColor || '#6366f1';
+    if (hue && light && record.themeColor) {
+        const hsl = hexToHsl(record.themeColor);
+        if (hsl) {
+            hue.value = Math.round(hsl.h);
+            light.value = Math.round(hsl.l);
+            light.style.setProperty('--hue', hue.value);
+        }
     }
 
     // 标记编辑模式
@@ -1770,7 +1872,8 @@ function saveRecord(e) {
         condition: formData.get('condition'),
         tracks: formData.get('tracks'),
         notes: formData.get('notes'),
-        cover: document.getElementById('cover-preview').querySelector('img')?.src || ''
+        cover: document.getElementById('cover-preview').querySelector('img')?.src || '',
+        themeColor: formData.get('themeColor') || ''
     };
 
     if (editId) {
@@ -2152,15 +2255,20 @@ function hideModals() {
 // UI 更新
 function updateUI() {
     const count = store.getAllRecords().length;
-    document.getElementById('record-count').textContent = `共 ${count} 张唱片`;
+    const rc = document.getElementById('record-count');
+    if (rc) rc.textContent = `共 ${count} 张唱片`;
 
     if (isSelectMode && selectedRecordIds.size > 0) {
-        document.getElementById('selected-count').textContent = `已选 ${selectedRecordIds.size} 张`;
-        document.getElementById('selected-count').classList.remove('hidden');
-        document.getElementById('batch-actions').classList.remove('hidden');
+        const sc = document.getElementById('selected-count');
+        const ba = document.getElementById('batch-actions');
+        if (sc) sc.textContent = `已选 ${selectedRecordIds.size} 张`;
+        if (sc) sc.classList.remove('hidden');
+        if (ba) ba.classList.remove('hidden');
     } else {
-        document.getElementById('selected-count').classList.add('hidden');
-        document.getElementById('batch-actions').classList.add('hidden');
+        const sc = document.getElementById('selected-count');
+        const ba = document.getElementById('batch-actions');
+        if (sc) sc.classList.add('hidden');
+        if (ba) ba.classList.add('hidden');
         if (selectedRecordIds.size === 0) {
             isSelectMode = false;
             document.querySelectorAll('.record-card').forEach(card => {
@@ -2208,6 +2316,46 @@ function formatFormat(format) {
         digital: '数字'
     };
     return formats[format] || '-';
+}
+
+function textColorFor(color) {
+    if (!color || !/^#([0-9a-fA-F]{6})$/.test(color)) return '';
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return yiq >= 186 ? '#000' : '#fff';
+}
+
+function hslToHex(h, s, l) {
+    s /= 100; l /= 100;
+    const k = n => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    const toHex = x => Math.round(x * 255).toString(16).padStart(2, '0');
+    return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+}
+
+function hexToHsl(hex) {
+    if (!/^#([0-9a-fA-F]{6})$/.test(hex)) return null;
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    if (max === min) {
+        h = 0; s = 0;
+    } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)); break;
+            case g: h = ((b - r) / d + 2); break;
+            case b: h = ((r - g) / d + 4); break;
+        }
+        h *= 60;
+    }
+    return { h, s: s * 100, l: l * 100 };
 }
 
 function updateResetButtonVisibility() {

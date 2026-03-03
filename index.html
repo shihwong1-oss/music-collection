@@ -14,7 +14,7 @@
                 <h1 class="nav-title" id="nav-title">WM</h1>
                 <div class="nav-actions">
                     <button id="add-btn" class="nav-btn primary" title="添加">
-                        <span class="icon">➕</span>
+                        <span class="icon">+</span>
                     </button>
                 </div>
             </div>
@@ -122,6 +122,25 @@
                         <div class="form-group">
                             <label for="record-name">唱片名称 <span class="required">*</span></label>
                             <input type="text" id="record-name" name="name" required placeholder="如：Thriller">
+                        </div>
+
+                        <div class="form-group">
+                            <label>主题色</label>
+                            <div class="artist-input-group">
+                                <button type="button" id="record-theme-chip" class="color-chip"></button>
+                                <input type="color" id="record-theme-color-picker" value="#6366f1" class="hidden">
+                                <input type="text" id="record-theme-color" name="themeColor" placeholder="#6366f1" value="">
+                                <div id="record-theme-popover" class="color-popover hidden">
+                                    <div class="color-preview" id="record-theme-preview"></div>
+                                    <div class="color-controls">
+                                        <label>色相</label>
+                                        <input type="range" id="record-theme-hue" min="0" max="360" value="235">
+                                        <label>亮度</label>
+                                        <input type="range" id="record-theme-light" min="20" max="90" value="60">
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="form-hint">可手动选择或输入色值（支持 #RRGGBB）</p>
                         </div>
 
                         <div class="form-group">
@@ -464,7 +483,12 @@
 
     
 
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script>
+        if (!window.jsQR) {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"><\/script>');
+        }
+    </script>
     <script src="app.js"></script>
 </body>
 </html>
