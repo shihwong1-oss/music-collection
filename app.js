@@ -29,6 +29,17 @@ class RecordStore {
                 this.artists = data.artists || ['Michael Jackson', 'The Beatles', 'David Bowie', 'Prince'];
                 this.labels = data.labels || ['Columbia Records', 'EMI', 'Sony Music', 'Warner Bros'];
                 this.channels = data.channels || ['Amazon', '唱片行', '网店', '拍卖会'];
+                
+                for (const record of this.records) {
+                    if (!record.cover) {
+                        try {
+                            const coverRes = await fetch('data/' + record.id + '.jpg', { method: 'HEAD' });
+                            if (coverRes.ok) {
+                                record.cover = 'data/' + record.id + '.jpg?t=' + Date.now();
+                            }
+                        } catch (e) {}
+                    }
+                }
                 return true;
             }
         } catch (err) {
