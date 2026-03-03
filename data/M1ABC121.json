@@ -1,0 +1,16 @@
+{
+  "id": "M1ABC121",
+  "name": "Dark Side of the Moon",
+  "artist": "Pink Floyd",
+  "releaseDate": "1973-03-01",
+  "mainCategory": "rock",
+  "subCategory": "progressive",
+  "format": "vinyl",
+  "rating": 10,
+  "label": "Harvest Records",
+  "purchaseChannel": "唱片行",
+  "tracks": "1. Speak to Me\n2. Breathe\n3. On the Run",
+  "notes": "经典专辑",
+  "cover": "M1ABC121.jpeg",
+  "createdAt": "2026-03-03T10:30:00Z"
+}

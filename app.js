@@ -31,13 +31,23 @@ class RecordStore {
                 this.channels = data.channels || ['Amazon', '唱片行', '网店', '拍卖会'];
                 
                 for (const record of this.records) {
-                    if (!record.cover) {
-                        try {
-                            const coverRes = await fetch('data/' + record.id + '.jpg', { method: 'HEAD' });
-                            if (coverRes.ok) {
-                                record.cover = 'data/' + record.id + '.jpg?t=' + Date.now();
+                    if (record.cover) {
+                        if (record.cover.startsWith('data:') || record.cover.startsWith('http')) {
+                            // 已经是完整路径
+                        } else if (!record.cover.includes('.')) {
+                            const exts = ['jpg', 'jpeg', 'png', 'webp'];
+                            for (const ext of exts) {
+                                try {
+                                    const coverRes = await fetch('data/' + record.id + '.' + ext, { method: 'HEAD' });
+                                    if (coverRes.ok) {
+                                        record.cover = 'data/' + record.id + '.' + ext + '?t=' + Date.now();
+                                        break;
+                                    }
+                                } catch (e) {}
                             }
-                        } catch (e) {}
+                        } else {
+                            record.cover = 'data/' + record.cover + '?t=' + Date.now();
+                        }
                     }
                 }
                 return true;
