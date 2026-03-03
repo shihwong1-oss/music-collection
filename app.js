@@ -20,27 +20,43 @@ class RecordStore {
         this.loadFromStorage();
     }
 
+    async loadFromFile() {
+        try {
+            const response = await fetch('data/data.json');
+            if (response.ok) {
+                const data = await response.json();
+                this.records = data.records || [];
+                this.artists = data.artists || ['Michael Jackson', 'The Beatles', 'David Bowie', 'Prince'];
+                this.labels = data.labels || ['Columbia Records', 'EMI', 'Sony Music', 'Warner Bros'];
+                this.channels = data.channels || ['Amazon', '唱片行', '网店', '拍卖会'];
+                return true;
+            }
+        } catch (err) {
+            console.log('data/data.json 不存在，使用默认数据');
+        }
+        return false;
+    }
+
     loadFromStorage() {
-        const stored = localStorage.getItem('musicRecords');
-        const artists = localStorage.getItem('musicArtists');
-        const labels = localStorage.getItem('musicLabels');
-        const channels = localStorage.getItem('musicChannels');
-        
-        if (stored) {
-            this.records = JSON.parse(stored);
-        }
-        if (artists) {
-            this.artists = JSON.parse(artists);
-        }
-        if (labels) {
-            this.labels = JSON.parse(labels);
-        }
-        if (channels) {
-            this.channels = JSON.parse(channels);
-        }
+        // 优先从 data/data.json 加载
+        this.loadFromFile().then(loaded => {
+            if (!loaded) {
+                // 回退到 localStorage
+                const stored = localStorage.getItem('musicRecords');
+                const artists = localStorage.getItem('musicArtists');
+                const labels = localStorage.getItem('musicLabels');
+                const channels = localStorage.getItem('musicChannels');
+                
+                if (stored) this.records = JSON.parse(stored);
+                if (artists) this.artists = JSON.parse(artists);
+                if (labels) this.labels = JSON.parse(labels);
+                if (channels) this.channels = JSON.parse(channels);
+            }
+        });
     }
 
     saveToStorage() {
+        // 数据保存在 localStorage（浏览器本地）
         localStorage.setItem('musicRecords', JSON.stringify(this.records));
         localStorage.setItem('musicArtists', JSON.stringify(this.artists));
         localStorage.setItem('musicLabels', JSON.stringify(this.labels));
@@ -383,6 +399,7 @@ function initApp() {
 function initEventListeners() {
     // 导航按钮
     document.getElementById('add-btn')?.addEventListener('click', () => showForm());
+    document.getElementById('export-data-btn')?.addEventListener('click', exportDataJson);
     document.getElementById('search-toggle-btn').addEventListener('click', showSearchBar);
     document.getElementById('search-close-btn').addEventListener('click', hideSearchBar);
     document.getElementById('search-input').addEventListener('input', (e) => {
@@ -2502,6 +2519,28 @@ function showChannelFilterModal() {
     document.getElementById('filter-channel-cancel-btn').onclick = hideModals;
     document.getElementById('filter-channel-modal').classList.remove('hidden');
     document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+// 导出 data.json 格式数据
+function exportDataJson() {
+    const data = {
+        records: store.records,
+        artists: store.artists,
+        labels: store.labels,
+        channels: store.channels,
+        savedAt: new Date().toISOString()
+    };
+    
+    const jsonStr = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'data.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    alert('已导出 data.json 格式！\n\n你可以：\n1. 把文件复制到项目的 data/ 文件夹\n2. 推送到 GitHub\n3. 网站会自动显示新数据');
 }
 
 // 初始化应用
