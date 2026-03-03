@@ -17,23 +17,8 @@
       "createdAt": "2026-03-03T10:00:00Z"
     }
   ],
-  "artists": [
-    "Michael Jackson",
-    "The Beatles",
-    "David Bowie",
-    "Prince"
-  ],
-  "labels": [
-    "Columbia Records",
-    "EMI",
-    "Sony Music",
-    "Warner Bros"
-  ],
-  "channels": [
-    "Amazon",
-    "唱片行",
-    "网店",
-    "拍卖会"
-  ],
+  "artists": ["Michael Jackson"],
+  "labels": ["Epic Records"],
+  "channels": ["Amazon"],
   "savedAt": "2026-03-03T00:00:00Z"
 }
