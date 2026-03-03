@@ -1,0 +1,39 @@
+{
+  "records": [
+    {
+      "id": "M1ABC123",
+      "name": "Thriller",
+      "artist": "Michael Jackson",
+      "releaseDate": "1982-11-31",
+      "mainCategory": "pop",
+      "subCategory": "",
+      "format": "cd",
+      "rating": 10,
+      "label": "Epic Records",
+      "purchaseChannel": "Amazon",
+      "tracks": "1. Billie Jean\n2. Beat It\n3. Thriller",
+      "notes": "经典专辑",
+      "cover": "",
+      "createdAt": "2026-03-03T10:00:00Z"
+    }
+  ],
+  "artists": [
+    "Michael Jackson",
+    "The Beatles",
+    "David Bowie",
+    "Prince"
+  ],
+  "labels": [
+    "Columbia Records",
+    "EMI",
+    "Sony Music",
+    "Warner Bros"
+  ],
+  "channels": [
+    "Amazon",
+    "唱片行",
+    "网店",
+    "拍卖会"
+  ],
+  "savedAt": "2026-03-03T00:00:00Z"
+}
