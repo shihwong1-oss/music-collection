@@ -400,6 +400,18 @@ function initEventListeners() {
     // 导航按钮
     document.getElementById('add-btn')?.addEventListener('click', () => showForm());
     document.getElementById('export-data-btn')?.addEventListener('click', exportDataJson);
+    document.getElementById('select-folder-btn')?.addEventListener('click', async () => {
+        const success = await LocalFileManager.selectDirectory();
+        if (success) {
+            alert('数据文件夹设置成功！\n\n添加唱片时会自动保存到本地文件夹。');
+            const records = await LocalFileManager.loadAllRecords();
+            if (records.length > 0) {
+                store.records = records;
+                renderRecordList();
+                alert(`已加载 ${records.length} 条唱片数据`);
+            }
+        }
+    });
     document.getElementById('search-toggle-btn').addEventListener('click', showSearchBar);
     document.getElementById('search-close-btn').addEventListener('click', hideSearchBar);
     document.getElementById('search-input').addEventListener('input', (e) => {
@@ -1895,8 +1907,14 @@ function saveRecord(e) {
 
     if (editId) {
         store.updateRecord(editId, record);
+        if (LocalFileManager.isConfigured) {
+          LocalFileManager.saveRecord({ ...record, id: editId });
+        }
     } else {
-        store.addRecord(record);
+        const newRecord = store.addRecord(record);
+        if (LocalFileManager.isConfigured && newRecord) {
+          LocalFileManager.saveRecord({ ...record, id: newRecord.id });
+        }
     }
 
     showView('list-view');
